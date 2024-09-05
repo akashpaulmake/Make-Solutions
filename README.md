@@ -18,7 +18,7 @@ To implement this design pattern, a monitoring scenario is needed to oversee all
 
 Any scenario that needs monitoring should be adjusted to send data at both the start and end, managing the scenario's running status.
 
-![Reference Image](images/api_limit_mapping.png)
+![Reference Image](images/api_Limiter.jpg)
 
 
 ### Monitoring Models
