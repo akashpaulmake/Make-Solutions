@@ -142,11 +142,3 @@ Both models provide different ways to monitor execution, allowing you to choose 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
-
-### How to Use the Files
-
-- **Functions**: The `countof` function in the `functions` folder should be added to your Make instance as a custom function.
-- **Data Structures**: Use the JSON files in the `datastructure` folder to set up the correct data model in your datastore.
-- **Sample Scenario**: The `Scenarios` folder contains a scenario blueprint that demonstrates how to set up the monitoring process. Import this scenario into Make and adjust as necessary.
-
-Feel free to further refine or customize this README according to your project's needs! Make sure the file paths are correctly set up in your GitHub repository for the links to work properly.
