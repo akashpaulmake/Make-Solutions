@@ -18,7 +18,7 @@ To implement this design pattern, a monitoring scenario is needed to oversee all
 
 Any scenario that needs monitoring should be adjusted to send data at both the start and end, managing the scenario's running status.
 
-![Reference Image](images/api_Limiter.jpg)
+![Reference Image](images/App Limiter.jpg)
 
 
 ### Monitoring Models
@@ -51,18 +51,25 @@ Both models provide different ways to monitor execution, allowing you to choose 
 
 - Define the API limit at the organization or team level. Name it according to your convenience. This parameter will be adjusted later when setting up the scenarios.
 
+![Reference Image](images/Organization Variable.png)
+
 #### Step 2: Download and Configure the Monitoring Scenario Blueprint
 
-1. **Import the Monitoring Scenario Blueprint** into Make, available in the [`Scenaiors`](akashpaulmake/app_monitoring_cloudlock/scenarios/app-monitoring-cloudlock.json) folder.
+1. **Import the Monitoring Scenario Blueprint** into Make, available in the [`Scenaiors`](scenarios) folder.
 2. **Configure the Webhook**:
    - Set up a webhook in the first step.
    - Map the organization variable to set the API limit for monitoring (current version supports one app but can be expanded).
+
+   ![Reference Image](images/api_limit_mapping.png)
+
 3. **Setup Make Scenario**:
    - Create a connection using `scenario:read/write` API token to dynamically fetch modules used in any scenario.
+
+
 4. **Setup Datastore**:
    - Use the data structures for [Model 1](datastructure/model1.json) and [Model 2](datastructure/model2.json) provided in the `datastructure` folder. Choose the model based on the use case and apply the data structure accordingly.
 
-![Reference Image](images/datastore_setup.png)
+  ![Reference Image](images/Scenario View.png)
 
 #### Step 3: Implement Cloud Lock in Production Scenarios
 
@@ -88,6 +95,8 @@ Both models provide different ways to monitor execution, allowing you to choose 
 | executionid | `{{executionId}}`                 | Variable from mapping panel           |
 | model       | 1                                 | 1 for model 1, 2 for model 2          |
 | timestamp   | `{{timestamp}}`                   | Variable from mapping panel           |
+
+![Reference Image](images/Demo 1.png)
 
 - **Sample CURL Request**:
    ```sh
