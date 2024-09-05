@@ -43,7 +43,7 @@ Both models provide different ways to monitor execution, allowing you to choose 
 ### Pre-Setup
 
 1. **Create a Custom Function**:
-   - Before importing the scenario, use the custom function found in the [`functions`](custom_function/countof.js) folder. This function, `countof`, is required to count specific API calls.
+   - Before importing the scenario, use the custom function found in the [`functions`](custom_function/countof.js) folder. This function, `countof`, is required to count specific number of modules from a scenario.
 
 ### Step-by-Step Setup
 
