@@ -18,7 +18,7 @@ To implement this design pattern, a monitoring scenario is needed to oversee all
 
 Any scenario that needs monitoring should be adjusted to send data at both the start and end, managing the scenario's running status.
 
-![Reference Image](images/App Limiter.jpg)
+  ![Reference Image2](images/app_limiter.jpg)
 
 
 ### Monitoring Models
@@ -51,7 +51,7 @@ Both models provide different ways to monitor execution, allowing you to choose 
 
 - Define the API limit at the organization or team level. Name it according to your convenience. This parameter will be adjusted later when setting up the scenarios.
 
-![Reference Image](images/Organization Variable.png)
+![Reference Image](images/Organization_Variable.png)
 
 #### Step 2: Download and Configure the Monitoring Scenario Blueprint
 
@@ -69,7 +69,7 @@ Both models provide different ways to monitor execution, allowing you to choose 
 4. **Setup Datastore**:
    - Use the data structures for [Model 1](datastructure/model1.json) and [Model 2](datastructure/model2.json) provided in the `datastructure` folder. Choose the model based on the use case and apply the data structure accordingly.
 
-  ![Reference Image](images/Scenario View.png)
+  ![Reference Image](images/scenario_view.png)
 
 #### Step 3: Implement Cloud Lock in Production Scenarios
 
