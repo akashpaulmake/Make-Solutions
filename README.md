@@ -18,6 +18,9 @@ To implement this design pattern, a monitoring scenario is needed to oversee all
 
 Any scenario that needs monitoring should be adjusted to send data at both the start and end, managing the scenario's running status.
 
+![Reference Image](images/api_limit_mapping.png)
+
+
 ### Monitoring Models
 
 We offer two models for monitoring scenarios:
@@ -50,7 +53,7 @@ Both models provide different ways to monitor execution, allowing you to choose 
 
 #### Step 2: Download and Configure the Monitoring Scenario Blueprint
 
-1. **Import the Monitoring Scenario Blueprint** into Make, available in the [`sample`](sample) folder.
+1. **Import the Monitoring Scenario Blueprint** into Make, available in the [`Scenaiors`](akashpaulmake/app_monitoring_cloudlock/scenarios/app-monitoring-cloudlock.json) folder.
 2. **Configure the Webhook**:
    - Set up a webhook in the first step.
    - Map the organization variable to set the API limit for monitoring (current version supports one app but can be expanded).
