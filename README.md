@@ -1,324 +1,140 @@
-**Problem Statement: **
+# API Rate Limit Monitoring with Make
 
-Imagine you’re using a service which has certain API limits, it could be by min, hour or overall limit. If exceeded either there will be additional invoice or it will rate limit the request. 
+## Problem Statement
 
-**Solution** - What if we monitor the API request in Make and delay it further so it doesn’t return any rate limit error 
+When using a service with API limits (e.g., per minute, hour, or overall), exceeding these limits can result in additional charges or rate-limiting errors. To prevent these issues, it's essential to monitor API requests and delay them as needed to avoid rate limit errors.
 
-**Overall Idea - **
+## Solution
 
-Make in general helps you to connect any API endpoint using our no code tool, however if you’re using any specific endpoint more than their specified limit you will either have a rate limit error or you may need to pay more to use it.  \
- \
-Generally there’s no straightforward solution available in Make, however a platform like Make we say it **“Never Say No”** it’s our true DNA that we’re able to achieve things and figure out different workarounds to achieve more things in Make. It’s truly relies with in the Design Pattern.
+Make provides a way to connect any API endpoint using a no-code tool. However, if a specific endpoint is used more than the allowed limit, you might encounter rate limit errors or incur additional charges. While Make does not offer a straightforward solution for this, our platform's "Never Say No" approach inspires us to devise creative workarounds.
 
-**How we’re solving this issue - **To achieve this, We’ve figured out a scenario design pattern. in addition to the existing scenario if adjusted it can manage the API limit based on the configuration. 
+### How We're Solving This Issue
 
-In order to implement this design pattern, we will need a monitoring scenario which will facilitate all the monitoring services and work as a cloud lock which will hold and release scenarios.
+To address this, we've developed a scenario design pattern that you can implement to manage API limits based on the required configuration.
 
-Then any scenario that is required to be monitored, should be adjusted accordingly to send the data in the beginning and the end to manage the state of the scenario running status. 
+#### Design Overview
 
-We’ve two models to monitor the scenario - 
+To implement this design pattern, a monitoring scenario is needed to oversee all services. This scenario acts as a cloud lock, holding and releasing requests as required.
 
+Any scenario that needs monitoring should be adjusted to send data at both the start and end, managing the scenario's running status.
 
+### Monitoring Models
 
-1. Model one - Monitor the request by min and hold any request that exceeds limits within the execution min. 
-2. Model two - Monitor the overall scenario running status and hold the API limit until the scenario completes its requests
+We offer two models for monitoring scenarios:
 
-While both offers different possibilities to monitor any execution, depending on the use case this can be selected in the request.  \
- \
+- **Model One**: Monitors requests by the minute and holds any requests that exceed the limits within that minute.
+- **Model Two**: Monitors the overall scenario's running status and holds API limits until all requests are completed.
 
+Both models provide different ways to monitor execution, allowing you to choose the best option based on your use case.
 
-**Diagram -  \
- \
- \
-**
-![alt_text](images/image1.jpg "image_tooltip")
-** \
-**
+## Folder Structure
 
-**How to Set this up - **We will explain it in step by step as there is multiple steps required to configure this.  \
- \
-**Pre-setup -  \
- \
-1. We’ve built a custom function to ease up the count of specific apps that needs to be monitored. [ Important - it should be performed before importing the scenario ] \
- \
-**Create a Custom function and give it a name of **countof**
+- **`functions`**: Contains the `countof` function script. This function is required for counting specific number of modules from a scenairo.
+- **`datastructure`**: Contains data structures for Model 1 and Model 2. These structures define how data is stored and managed during monitoring.
+- **`Scenarios`**: Contains the Cloudlock & Monitoring scenario blueprint to demonstrate the monitoring setup. This can be imported into Make for reference.
 
-And paste this function \
- \
-`function countof(arr, item) {`
+---
 
+## Setup Instructions
 
-```
-   let count = 0;
-   for (let i = 0; i < arr.length; i++) {
-       if (arr[i] === item) {
-           count++;
-       }
-   }
-   return count;
-}
-```
+### Pre-Setup
 
+1. **Create a Custom Function**:
+   - Before importing the scenario, use the custom function found in the [`functions`](custom_function/countof.js) folder. This function, `countof`, is required to count specific API calls.
 
-**Step 1 - **Set a Global Variable at Organization or team level, here we will define the API limit based on the Application.
+### Step-by-Step Setup
 
+#### Step 1: Set a Global Variable
 
-![alt_text](images/image2.png "image_tooltip")
-** \
- \
-**
+- Define the API limit at the organization or team level. Name it according to your convenience. This parameter will be adjusted later when setting up the scenarios.
 
-Name it as per your convenience, we will be adjusting this parameter once we will setup the scenarios. 
+#### Step 2: Download and Configure the Monitoring Scenario Blueprint
 
-**Step 2 - **Download the Monitoring Scenario blueprint and export it in Make.  \
+1. **Import the Monitoring Scenario Blueprint** into Make, available in the [`sample`](sample) folder.
+2. **Configure the Webhook**:
+   - Set up a webhook in the first step.
+   - Map the organization variable to set the API limit for monitoring (current version supports one app but can be expanded).
+3. **Setup Make Scenario**:
+   - Create a connection using `scenario:read/write` API token to dynamically fetch modules used in any scenario.
+4. **Setup Datastore**:
+   - Use the data structures for [Model 1](datastructure/model1.json) and [Model 2](datastructure/model2.json) provided in the `datastructure` folder. Choose the model based on the use case and apply the data structure accordingly.
 
+![Reference Image](images/datastore_setup.png)
 
+#### Step 3: Implement Cloud Lock in Production Scenarios
 
+1. **Add HTTP Module at the Beginning**:
+   - Add an HTTP module with the following parameters:
+     ```json
+     {
+       "app_name": "util",
+       "scenario_id": "91615",
+       "status": "block",
+       "model": "1",
+       "timestamp": "1725373841",
+       "executionid": "9e6633388bc64303b245f6689afb0621"
+     }
+     ```
+   - *Sample Request Body Parameters:*
 
-* Configure the webhook in the first step \
+| Key         | Value                             | Description                           |
+|-------------|-----------------------------------|---------------------------------------|
+| app_name    | Example - netsuite                | The name of the application           |
+| scenario_id | `{{scenario_id}}`                 | Variable from mapping panel           |
+| status      | block                             | Block at the beginning, unblock at end|
+| executionid | `{{executionId}}`                 | Variable from mapping panel           |
+| model       | 1                                 | 1 for model 1, 2 for model 2          |
+| timestamp   | `{{timestamp}}`                   | Variable from mapping panel           |
 
-* Map the organization variable which will set the API limit for the monitoring scenario ( At this moment in this version this monitoring design can only handle one app but it can expanded further ) \
- \
+- **Sample CURL Request**:
+   ```sh
+   curl -X POST '{{webhookurl}}?app_name=netsuite&scenario_id=91503&status=block&timestamp=1725373350&model=1&executionid=d61a793c6b044af2af2d9bac4bc1ec41' -H 'Accept-Encoding: gzip, br, deflate' -H 'User-Agent: Make/production'
+   ```
 
-![alt_text](images/image3.png "image_tooltip")
- \
+#### Step 4: Set Up Cloud Release
 
-* Setup Make > Get a Scenario: Create a connection with scenario:read/write api token for this module to fetch the modules used in any scenario dynamically. \
- \
+1. **Add an HTTP > Make a Request Module** at the end of the scenario:
+   - Configure the parameters similarly to the Cloud Lock, but use the "unblock" status.
+   - Sample Request:
+     ```json
+     {
+       "app_name": "util",
+       "current_limit": "5",
+       "key_min": "util0309200",
+       "status": "unblock",
+       "scenario_id": "91615",
+       "model": "1",
+       "executionid": "9e6633388bc64303b245f6689afb0621"
+     }
+     ```
 
-* Setup Datastore > Search, Create a record :  \
-	- Create the data structure based on the model and save the data store.
+- *Sample Body Parameters:*
 
-*  select the model based on the choice and apply the data structure in the specific route. Check the below image for reference
+| Key         | Value                             | Description                           |
+|-------------|-----------------------------------|---------------------------------------|
+| app_name    | Map from HTTP module output        | The name of the application           |
+| scenario_id | `{{scenario_id}}`                 | Variable from mapping panel           |
+| status      | unblock                           | Block at the beginning, unblock at end|
+| key_min     | Map from HTTP module output        | Key derived from previous response    |
+| executionid | `{{executionId}}`                 | Variable from mapping panel           |
+| model       | 1                                 | 1 for model 1, 2 for model 2          |
+| timestamp   | `{{timestamp}}`                   | Variable from mapping panel           |
 
+## Additional Notes
 
-![alt_text](images/image4.png "image_tooltip")
+- Ensure to adjust parameters correctly based on the monitoring model selected.
+- Test the setup thoroughly in a staging environment before applying it to production.
 
+## License
 
- \
-**Step 3 - **In this step, we will implement the Cloud Lock in your production scenarios.  \
- \
- HTTP Module should be added at the beginning of the scenario with the below parameters to the monitoring scenario. 
-
-Add a HTTP module ( if you’ve already downloaded the sample scenario, you can copy and paste it anywhere before the module which you want to monitor )
-
- \
- \
-**Sample Request - **
-
-{
-
-  "app_name": "util",
-
-  "scenario_id": "91615",
-
-  "status": "block",
-
-  "model": "1",
-
-  "timestamp": "1725373841",
-
-  "executionid": "9e6633388bc64303b245f6689afb0621"
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-} \
+---
 
+### How to Use the Files
 
-**Body Parameters: **
+- **Functions**: The `countof` function in the `functions` folder should be added to your Make instance as a custom function.
+- **Data Structures**: Use the JSON files in the `datastructure` folder to set up the correct data model in your datastore.
+- **Sample Scenario**: The `Scenarios` folder contains a scenario blueprint that demonstrates how to set up the monitoring process. Import this scenario into Make and adjust as necessary.
 
-
-<table>
-  <tr>
-   <td><strong>key</strong>
-   </td>
-   <td><strong>Value</strong>
-   </td>
-   <td><strong>Description</strong>
-   </td>
-  </tr>
-  <tr>
-   <td><strong>app_name </strong>
-   </td>
-   <td>Example - netsuite
-   </td>
-   <td>
-   </td>
-  </tr>
-  <tr>
-   <td><strong>scenario_id</strong>
-   </td>
-   <td>{{scenario_id}}
-   </td>
-   <td>Map the variable from mapping panel
-   </td>
-  </tr>
-  <tr>
-   <td><strong>status</strong>
-   </td>
-   <td>block
-   </td>
-   <td>Block - in the beginning  \
-Unblock - at the end of the scenario
-   </td>
-  </tr>
-  <tr>
-   <td><strong>executionid</strong>
-   </td>
-   <td>{{executionId}}
-   </td>
-   <td>Map the variable from mapping panel
-   </td>
-  </tr>
-  <tr>
-   <td><strong>model</strong>
-   </td>
-   <td>1
-   </td>
-   <td>1 - select model 1
-<p>
-2 - select model 2
-   </td>
-  </tr>
-  <tr>
-   <td><strong>timestamp</strong>
-   </td>
-   <td>{{timestamp}}
-   </td>
-   <td>Map the variable from mapping panel
-   </td>
-  </tr>
-</table>
-
-
-**Response - **
-
-{
-
-  "app_name": "util",
-
-  "current_limit": "5",
-
-  "key_min": " util0309200",
-
-  "status": "unblock",
-
-  "scenario_id": "91615",
-
-  "model": "1",
-
-  "executionid": "9e6633388bc64303b245f6689afb0621"
-
-}
-
-**Sample of CURL request -  \
- \
-**
-
-**curl -X POST '{{webhookurl}}?app_name=netsuite&scenario_id=91503&status=block&timestamp=1725373350&model=1&exectionid=d61a793c6b044af2af2d9bac4bc1ec41' -H 'Accept-Encoding: gzip, br, deflate' -H 'User-Agent: Make/production'**
-
-
-![alt_text](images/image5.png "image_tooltip")
-
-
-**Step 4 - **Setup Cloud Release in this step
-
-Add a HTTP > Make a Request module at the end of the scenario and configure rest of the parameters ( if you’ve already downloaded the sample scenario, you can copy and paste it anywhere before the module which you want to monitor ) \
-
-
-**Body > Application/type- JSON**
-
-** \
-**{
-
-  "app_name": "util",
-
-  "current_limit": "5",
-
-  "key_min": " util0309200",
-
-  "status": "unblock",
-
-  "scenario_id": "91615",
-
-  "model": "1",
-
-  "executionid": "9e6633388bc64303b245f6689afb0621"
-
-}
-
-
-<table>
-  <tr>
-   <td><strong>key</strong>
-   </td>
-   <td><strong>Value</strong>
-   </td>
-   <td><strong>Description</strong>
-   </td>
-  </tr>
-  <tr>
-   <td><strong>app_name </strong>
-   </td>
-   <td>
-   </td>
-   <td>Map the variable from HTTP module output 
-   </td>
-  </tr>
-  <tr>
-   <td><strong>scenario_id</strong>
-   </td>
-   <td>{{scenario_id}}
-   </td>
-   <td>Map the variable from mapping panel
-   </td>
-  </tr>
-  <tr>
-   <td><strong>status</strong>
-   </td>
-   <td>unblock
-   </td>
-   <td>Block - in the beginning  \
-Unblock - at the end of the scenario
-   </td>
-  </tr>
-  <tr>
-   <td><strong>key_min</strong>
-   </td>
-   <td>
-   </td>
-   <td>Map the variable from HTTP module output 
-   </td>
-  </tr>
-  <tr>
-   <td><strong>executionid</strong>
-   </td>
-   <td>{{executionId}}
-   </td>
-   <td>Map the variable from mapping panel
-   </td>
-  </tr>
-  <tr>
-   <td><strong>model</strong>
-   </td>
-   <td>1
-   </td>
-   <td>1 - select model 1
-<p>
-2 - select model 2
-   </td>
-  </tr>
-  <tr>
-   <td><strong>timestamp</strong>
-   </td>
-   <td>{{timestamp}}
-   </td>
-   <td>Map the variable from mapping panel
-   </td>
-  </tr>
-</table>
-
-
- \
-
-
-
-![alt_text](images/image6.png "image_tooltip")
+Feel free to further refine or customize this README according to your project's needs! Make sure the file paths are correctly set up in your GitHub repository for the links to work properly.
