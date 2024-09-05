@@ -96,7 +96,7 @@ Both models provide different ways to monitor execution, allowing you to choose 
 | model       | 1                                 | 1 for model 1, 2 for model 2          |
 | timestamp   | `{{timestamp}}`                   | Variable from mapping panel           |
 
-![Reference Image](images/Demo 1.png)
+![Reference Image](images/Demo1.png)
 
 - **Sample CURL Request**:
    ```sh
